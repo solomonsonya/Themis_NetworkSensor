@@ -315,137 +315,6 @@ import java.net.Socket;
 			return lookup;
 		}
 		
-		/**
-		 * This method queries the user via JChooser to select a file
-		 * 
-		 * Examples: INPUT  FILE TO LOAD --> querySelectFile(false, "Please specify data set to import", JFileChooser.FILES_ONLY, false, false);
-		 * Examples: OUTPUT FILE TO SAVE --> querySelectFile(true, "Please specify outfile location for " + x, JFileChooser.DIRECTORIES_ONLY, false, false)
-		 */
-		public  File querySelectFile(boolean openDialog, String dialogueTitle, int fileChooserSelectionMode, boolean thisLoadsCSV, boolean useFileFilter)
-		{
-			
-			/**
-			 * Drivers_Thread.fleCarrier_NetworkCommand = Drivers.querySelectFile(true, "Please Select the Carrier Image to hold the Steganographic command(s) and content", JFileChooser.FILES_ONLY, false, true);
-				
-				if(Drivers_Thread.fleCarrier_NetworkCommand == null)
-				{
-					this.jtfCarrierImage_Settings.setText("No Carrier Destination File Selected");
-					this.jtfCarrierImage_Settings.setToolTipText("No Carrier Destination File Selected");
-				}
-				
-				else//a good file was selected
-				{
-					this.jtfCarrierImage_Settings.setText(Drivers_Thread.fleCarrier_NetworkCommand.getCanonicalPath());
-					jtfCarrierImage_Settings.setToolTipText(Drivers_Thread.fleCarrier_NetworkCommand.getCanonicalPath());
-				}
-			 */
-			
-			try
-			{
-				JFileChooser jfc = new JFileChooser(new File("."));
-				jfc.setFileSelectionMode(fileChooserSelectionMode);
-				jfc.setDialogTitle(dialogueTitle);
-				//jfc.setMultiSelectionEnabled(enableMultipleFileSelection);
-				
-				if(thisLoadsCSV)
-				{
-					jfc.setFileFilter(new javax.swing.filechooser.FileFilter() 
-					{
-			            public boolean accept(File fle) 
-			            {
-			                //accept directories
-			            	if(fle.isDirectory())
-			                	return true;
-			            	
-			            	String strFleName = fle.getName().toLowerCase();
-			                 
-			                return strFleName.endsWith(".csv");
-			              }
-			   
-			              public String getDescription() 
-			              {
-			                return "Comma Separated Values";
-			              }
-			              
-			         });
-					
-				}
-				
-				/***************************************
-				 * Filter for only Specified Formats
-				 ***************************************/
-				else if(useFileFilter)
-				{
-					jfc.setFileFilter(new javax.swing.filechooser.FileFilter() 
-					{
-			            public boolean accept(File fle) 
-			            {
-			            	String extension = "";
-			            	
-			                //accept directories
-			            	if(fle.isDirectory())
-			                	return true;
-			            	
-			            	if(fle == null)
-			            		return false;
-			            	
-			            	if(fle != null && fle.exists() && getFileExtension(fle, false)!= null)
-			            		extension = (getFileExtension(fle, false)).replace(".", "");//remove the "." if present
-			            	
-			            	/*if(lstAcceptableFileExtensionsForStego.contains(extension.toLowerCase()))
-			            		return true;*/
-			            	
-			            	//else 
-			            		return false;
-			              }
-			   
-			              public String getDescription() 
-			              {
-			                return "Specific Formats";
-			              }
-			              
-			         });
-				}
-				
-				
-				try
-				{
-					jfc.setCurrentDirectory(new File(".\\"));
-				}catch(Exception e){}
-				
-				int selection = 0;
-				
-				if(openDialog)					
-				{
-					selection = jfc.showOpenDialog(null);
-				}
-				
-				else
-				{
-					//selection = jfc.showDialog(null, "Save Now!"); <-- this code works too
-					selection = jfc.showSaveDialog(null);
-				}
-						
-				if(selection == JFileChooser.APPROVE_OPTION)//selected yes!
-				{
-					if(openDialog || (!openDialog && !thisLoadsCSV))
-						return jfc.getSelectedFile();
-					
-					else
-						return new File(jfc.getSelectedFile().getAbsolutePath() + ".csv");
-				}
-				
-				//else fall through and return null;
-			}
-			
-			catch(Exception e)
-			{
-				eop("querySelectFile", "Drivers", e);
-				
-			}
-			
-			return null;
-		}
 		
 		
 		
@@ -986,6 +855,8 @@ import java.net.Socket;
 						
 						String full_designation = (interface_number + " " + interface_name).trim();
 						
+						tshark_interfaces.add(full_designation);
+						
 						if(interface_names == null)
 							interface_names = new LinkedList<String>();
 						
@@ -1041,7 +912,11 @@ import java.net.Socket;
 						if(this.isWindows)
 							p = Runtime.getRuntime().exec("cmd.exe /C " + "\"" + path_to_tshark_if_applicable + " -D" + "\"");
 						else
-							p = Runtime.getRuntime().exec(path_to_tshark_if_applicable + " -D");
+						{
+							//p = Runtime.getRuntime().exec(path_to_tshark_if_applicable + " -D");
+							String [] cmd = new String [] {"/bin/bash", "-c", "tshark -D"};
+							p = Runtime.getRuntime().exec(cmd);	
+						}
 						
 						BufferedReader b = new BufferedReader(new InputStreamReader(p.getInputStream()));
 						BufferedReader e = new BufferedReader(new InputStreamReader(p.getErrorStream()));
@@ -1444,20 +1319,7 @@ import java.net.Socket;
 			}
 		}
 		
-		public int query_user(String message, String title)
-		{
-			try
-			{
-				return JOptionPane.showConfirmDialog(null, message, title, JOptionPane.YES_NO_OPTION);
-			       
-			}
-			catch(Exception e)
-			{
-				eop(myClassName, "query_user");
-			}
-			
-			return -1;
-		}
+		
 		
 		public boolean is_private_ipv4_address(Socket skt)
 		{
@@ -2130,12 +1992,12 @@ import java.net.Socket;
 						
 						fle_path_app_data_chrome_cookies = new File(path_app_data_chrome_cookies);
 						
-						if(!fle_path_app_data_chrome_cookies.exists() || !fle_path_app_data_chrome_cookies.isFile())
+						/*if(!fle_path_app_data_chrome_cookies.exists() || !fle_path_app_data_chrome_cookies.isFile())
 						{
 							//couldn't find it, query user
 							directive("I could not find location to Google Chrome Cookies database file. \nThis file is usually located at %localappdata%\\Google\\Chrome\\User Data\\Default\\Cookies\n\nIf Chrome is configured on this machine, please select path to the cookies file if you wish this data\nto be included in analysis.");									
 							fle_path_app_data_chrome_cookies = this.querySelectFile(true, "Please select location to Chrome Cookies database file.", JFileChooser.FILES_ONLY, false, false);
-						}
+						}*/
 						
 						if(!fle_path_app_data_chrome_cookies.exists() || !fle_path_app_data_chrome_cookies.isFile())
 							fle_path_app_data_chrome_cookies = null;		
@@ -2177,14 +2039,14 @@ import java.net.Socket;
 				
 				InputStream is = getFile_within_JAR(file_path_within_JAR);
 				
-				if(is == null)
+				/*if(is == null)
 				{
 					//file was not found
 					File fle = querySelectFile(true, "Could not locate Graph dependency within binary. Please select now...", JFileChooser.FILES_ONLY, false, false);
 					
 					if(fle != null)
 						is = new FileInputStream(fle);
-				}
+				}*/
 				
 				if(is == null)
 				{

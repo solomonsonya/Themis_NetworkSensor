@@ -82,7 +82,7 @@ public class Start
 			{
 				//execute which cmd to ensure we have tshark configured on the machine
 				try	
-				{	
+				{
 					Process p = Runtime.getRuntime().exec("which tshark");
 					
 					BufferedReader brIn = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -100,24 +100,13 @@ public class Start
 							driver.directivesp("Error Message: \"" + error + "\"");
 						}
 						
-						File fle_tshark = driver.querySelectFile(true, "Please select path to tshark.exe", JFileChooser.FILES_ONLY, false, false);
-						
-						if(fle_tshark!= null && fle_tshark.exists() && fle_tshark.isFile())
-						{
-							tshark_path = fle_tshark.getCanonicalPath();
-							TSHARK_RUN_COMMAND = "\"" + fle_tshark.getCanonicalPath() + "\"";
-						}
-						
-						else
-						{
-							driver.directivesp("ERROR! I cannot find path to tshark.exe. \nPlease configure your system appropriately and then try again in order to ensure\nproper execution of " + driver.FULL_NAME);
-						}
+						driver.directivesp("ERROR! I cannot find path to tshark.exe. \nPlease configure your system appropriately and then try again in order to ensure\nproper execution of " + driver.FULL_NAME);
 					}
 					
 					else
 					{
 						//driver.directivesp("tshark was located at -->" + tshark_path);
-						//TSHARK_RUN_COMMAND = tshark_path ;
+						TSHARK_RUN_COMMAND = "tshark" ;
 					}
 					
 
@@ -163,17 +152,8 @@ public class Start
 				{
 					driver.directivesp("ERROR! I cannot location path to tshark.exe. I will query user for tshark.exe path now...");
 					
-					fle_tshark = driver.querySelectFile(true, "Please select path to tshark.exe", JFileChooser.FILES_ONLY, false, false);
+					driver.directivesp("ERROR! I cannot find path to tshark.exe. \nPlease configure your system appropriately and then try again in order to ensure\nproper execution of " + driver.FULL_NAME);
 					
-					if(fle_tshark!= null && fle_tshark.exists() && fle_tshark.isFile())
-					{
-						TSHARK_RUN_COMMAND = "\"" + fle_tshark.getCanonicalPath() + "\"";
-					}
-					
-					else
-					{
-						driver.directivesp("ERROR! I cannot find path to tshark.exe. \nPlease configure your system appropriately and then try again in order to ensure\nproper execution of " + driver.FULL_NAME);
-					}
 					
 				}
 				else
@@ -434,10 +414,11 @@ public class Start
 			
 			configure_tshark_execution_path();
 			
-			driver.sop("\nInstantiation of tshark set to be -->"  + TSHARK_RUN_COMMAND);
+			driver.sop("\nInstantiation of tshark set to be --> "  + TSHARK_RUN_COMMAND);
 			
 			//list interfaces
 			driver.directive("\nDetecting network interfaces now.  Please take note and use one \nof the specific interface numbers below to establish the sensor...\n");
+			
 			LinkedList<String> list_interfaces = driver.list_interfaces(true, TSHARK_RUN_COMMAND);
 			
 			driver.print_linked_list("\nInterfaces found:", list_interfaces);
